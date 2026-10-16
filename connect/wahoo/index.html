@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>pacR · Wahoo</title>
+<!--
+  0.5 spec § 2.1: Wahoo only redirects to HTTPS. This page hands the code on
+  to the athlete's own pacR on 127.0.0.1; the port comes from `state`
+  ("<port>.<random>"). It stores nothing and loads nothing. Without the PKCE
+  verifier, which never leaves the athlete's PC, the code is worthless.
+  Source: endurance-training-dashboard/windows/pages/connect/wahoo/index.html
+-->
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: Canvas; color: CanvasText; }
+  main { max-width: 32rem; margin: 20vh auto; padding: 0 16px; }
+  h1 { font-size: 1.3rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Verbindung zu Wahoo wird abgeschlossen …</h1>
+  <p id="msg">Einen Moment, pacR übernimmt gleich.</p>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(window.location.search);
+  var state = q.get("state") || "";
+  var port = state.split(".")[0];
+  var msg = document.getElementById("msg");
+  if (!/^\d{4,5}$/.test(port) || Number(port) > 65535) {
+    msg.textContent = "Diese Adresse passt nicht zu pacR. Bitte die Verbindung im Dashboard noch einmal starten.";
+    return;
+  }
+  var out = new URLSearchParams();
+  ["code", "state", "error"].forEach(function (key) {
+    var value = q.get(key);
+    if (value !== null) { out.set(key, value); }
+  });
+  window.location.replace("http://127.0.0.1:" + port + "/connect/wahoo/callback?" + out.toString());
+})();
+</script>
+</body>
+</html>
